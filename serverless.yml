@@ -49,6 +49,11 @@ functions:
       events:
         - websocket:
             route: joinGame
+  websocket-startGame:
+      handler: lambdas/websockets/startGame.handler
+      events:
+        - websocket:
+            route: startGame
 resources:
   Resources:
     WebSocketUserTable:

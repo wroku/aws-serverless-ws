@@ -15,9 +15,17 @@ exports.handler = async event => {
         const {domainName, stage} = record;
         const gameId = `g${Date.now()}`;
 
-        const data = {
+        const gameData = {
             ID: gameId,
-            players: [connectionID]
+            players: [connectionID],
+            started: false,
+        };
+
+        await Dynamo.write(gameData, tableName);
+
+        const data = {
+            ...record,
+            game: gameId,
         };
 
         await Dynamo.write(data, tableName);

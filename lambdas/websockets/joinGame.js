@@ -15,32 +15,48 @@ exports.handler = async event => {
     try {
         const gameRecord = await Dynamo.get(body.gameId, tableName);
         const players = gameRecord.players;
-
-        players.push(connectionID);
-
-        const data = {
-            ...gameRecord,
-            players,
-        };
-
-        await Dynamo.write(data, tableName);
-
-        for (const player of players) {
-
-            const record = await Dynamo.get(player, tableName);
-            const {domainName, stage} = record;
-            
-            await WebSocket.send({
-                domainName, 
-                stage, 
-                connectionID:player, 
-                message: `Player ${player} joined ${body.gameId} game!`
-            });
-        };
         
+        if (gameRecord.started === false) {
+            players.push(connectionID);
 
+            const gameData = {
+                ...gameRecord,
+                players,
+            };
+
+            await Dynamo.write(gameData, tableName);
+
+            const record = await Dynamo.get(connectionID, tableName);
+
+            const data = {
+                ...record,
+                game: body.gameId,
+            };
+
+            await Dynamo.write(data, tableName);
+
+            for (const player of players) {
+
+                const record = await Dynamo.get(player, tableName);
+                const {domainName, stage} = record;
+                
+                await WebSocket.send({
+                    domainName, 
+                    stage, 
+                    connectionID:player, 
+                    message: `Player ${player} joined ${body.gameId} game!`
+                });
+            };   
+
+            return Responses._200({message: 'joined game'});
+
+        } else {
+
+            return Responses._400({message: 'This game has already started.'});
         
-        return Responses._200({message: 'joined game'});
+        }
+        
+        
     } catch (error) {
         return Responses._400({message: 'game could not be joined'});
     }   

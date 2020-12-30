@@ -10,10 +10,10 @@ exports.handler = async event => {
 
     const data = {
         ID: connectionID,
-        date: Date.now(),
         messages: [],
         domainName,
         stage,
+        game: 'waiting', 
     };
 
     await Dynamo.write(data, tableName);
