@@ -1,4 +1,3 @@
-const { domain } = require('process');
 const Responses = require('../common/API_Responses');
 const Dynamo = require('../common/Dynamo');
 const WebSocket = require('../common/websocketMessage');
@@ -27,6 +26,7 @@ exports.handler = async event => {
             await Dynamo.write(gameData, tableName);
 
             const record = await Dynamo.get(connectionID, tableName);
+            const {domainName, stage} = record;
 
             const data = {
                 ...record,
@@ -35,15 +35,12 @@ exports.handler = async event => {
 
             await Dynamo.write(data, tableName);
 
-            for (const player of players) {
+            for (const player of gameRecord.players) {
 
-                const record = await Dynamo.get(player, tableName);
-                const {domainName, stage} = record;
-                
                 await WebSocket.send({
                     domainName, 
                     stage, 
-                    connectionID:player, 
+                    connectionID: player, 
                     message: `Player ${player} joined ${body.gameId} game!`
                 });
             };   

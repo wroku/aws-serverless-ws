@@ -10,7 +10,6 @@ exports.handler = async event => {
 
     const data = {
         ID: connectionID,
-        messages: [],
         domainName,
         stage,
         game: 'waiting', 

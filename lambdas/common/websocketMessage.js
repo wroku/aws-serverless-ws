@@ -19,6 +19,7 @@ const send = ({domainName, stage, connectionID, message}) => {
     return ws.postToConnection(postParams).promise();
 };
 
+
 module.exports = {
     send,
 };

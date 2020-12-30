@@ -1,4 +1,5 @@
 const AWS = require('aws-sdk');
+const { SSL_OP_CISCO_ANYCONNECT } = require('constants');
 
 const documentClient = new AWS.DynamoDB.DocumentClient();
 
@@ -50,6 +51,17 @@ const Dynamo = {
 
         return documentClient.delete(params).promise();
     },
+
+    async scan(ProjectionExpression, TableName) {
+    
+        const res = await documentClient.scan({ TableName: TableName, ProjectionExpression: ProjectionExpression }).promise();
+        
+        if (!res) {
+            throw Error(`There was an error scaning db table ${TableName} for ${ProjectionExpression}`);
+        }
+        
+        return res;
+    }
 };
 module.exports = Dynamo;
 

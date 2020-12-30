@@ -18,6 +18,7 @@ exports.handler = async event => {
         const gameData = {
             ID: gameId,
             players: [connectionID],
+            messages:[],
             started: false,
         };
 

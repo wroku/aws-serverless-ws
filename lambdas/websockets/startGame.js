@@ -12,7 +12,7 @@ exports.handler = async event => {
 
     try {
         const record = await Dynamo.get(connectionID, tableName);
-        const {game} = record;
+        const {domainName, stage, game} = record;
         const gameRecord = await Dynamo.get(game, tableName);
 
         const gameData = {
@@ -24,9 +24,6 @@ exports.handler = async event => {
 
         
         for (const player of gameRecord.players) {
-
-            const record = await Dynamo.get(player, tableName);
-            const {domainName, stage} = record;
             
             await WebSocket.send({
                 domainName, 
