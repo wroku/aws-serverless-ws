@@ -35,15 +35,13 @@ exports.handler = async event => {
 
             await Dynamo.write(data, tableName);
 
-            for (const player of gameRecord.players) {
-
-                await WebSocket.send({
-                    domainName, 
-                    stage, 
-                    connectionID: player, 
-                    message: `Player ${player} joined ${body.gameId} game!`
-                });
-            };   
+            await WebSocket.broadcast({
+                domainName, 
+                stage, 
+                connectionIDs: gameRecord.players, 
+                message: `Player ${connectionID} joined ${body.gameId} game!`
+            });
+        
 
             return Responses._200({message: 'joined game'});
 

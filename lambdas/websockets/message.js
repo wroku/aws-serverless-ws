@@ -15,34 +15,34 @@ exports.handler = async event => {
         const record = await Dynamo.get(connectionID, tableName);
         const {domainName, stage, game} = record;
 
-        if (game != 'waiting'){
+        if (game != 'waiting') {
+            /*Send message only to current gameroom*/
             const gameRecord = await Dynamo.get(game, tableName);
 
-            for (const player of gameRecord.players) {
-                await WebSocket.send({
-                    domainName, 
-                    stage, 
-                    connectionID: player, 
-                    message: `${player}: ${body.message}`
-                });
-            };   
-        } else {
-
-            const allUsers = await Dynamo.scan('connectionId', tableName);
-            console.log(allUsers);
-            /* Received [object Object], check structure and filter for waiting users&send messages to them*/
-            await WebSocket.send({
+            await WebSocket.broadcast({
                 domainName, 
                 stage, 
-                connectionID, 
-                message: `ALL: ${allUsers}`
+                connectionIDs: gameRecord.players, 
+                message: `${connectionID}: ${body.message}`
             });
+               
+        } else {
+            /*Send message to all waiting users*/
+            const waitingUsers = await Dynamo.scan('game = :id',{':id':'waiting'},'ID', tableName);
+            const waitingUsersConnectionsIDs = waitingUsers.Items.map(x => x.ID);
+            
+            await WebSocket.broadcast({
+                domainName, 
+                stage, 
+                connectionIDs: waitingUsersConnectionsIDs, 
+                message: `${connectionID}: ${body.message}`
+            });
+            
         }
 
         return Responses._200({message: 'broadcasted a message'});
     } catch (error) {
-        return Responses._400({message: 'message could not be received'});
+        return Responses._400({message: 'message could not be received or propagated'});
     }   
 
-    return Responses._200({ message: 'broadcasted a message' });
 };

@@ -54,6 +54,12 @@ functions:
       events:
         - websocket:
             route: startGame
+  websocket-lobbyInfo:
+      handler: lambdas/websockets/lobbyInfo.handler
+      events:
+        - websocket:
+            route: lobbyInfo
+  
 resources:
   Resources:
     WebSocketUserTable:

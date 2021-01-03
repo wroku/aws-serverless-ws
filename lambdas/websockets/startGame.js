@@ -22,16 +22,13 @@ exports.handler = async event => {
 
         await Dynamo.write(gameData, tableName);
 
-        
-        for (const player of gameRecord.players) {
-            
-            await WebSocket.send({
-                domainName, 
-                stage, 
-                connectionID:player, 
-                message: `Game ${game} has just begun!`
-            });
-        };   
+        await WebSocket.broadcast({
+            domainName, 
+            stage, 
+            connectionIDs: gameRecord.players, 
+            message: `Game ${game} has just begun!`
+        });
+          
         
 
         return Responses._200({message: 'started game'});
