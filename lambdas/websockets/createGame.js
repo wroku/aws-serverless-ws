@@ -35,13 +35,23 @@ exports.handler = async event => {
             domainName, 
             stage, 
             connectionID, 
-            message: `created game ${gameId}`
+            message: JSON.stringify({"message":`created game ${gameId}`})
+        });
+
+        /* Update lobby state for all waiting users */
+        /* Maybe update method without another scan? */
+        const waitingUsers = await Dynamo.scan('game = :id',{':id':'waiting'},'ID', tableName);
+        const waitingUsersConnectionsIDs = waitingUsers.Items.map(x => x.ID);
+
+        await WebSocket.broadcast({
+            domainName, 
+            stage, 
+            connectionIDs: waitingUsersConnectionsIDs, 
+            message: JSON.stringify({"lobbyUpdate": {"ID":gameId, "started": false}})
         });
 
         return Responses._200({message: 'created game'});
     } catch (error) {
         return Responses._400({message: 'game could not be created'});
     }   
-
-    return Responses._200({ message: 'created game' });
 };

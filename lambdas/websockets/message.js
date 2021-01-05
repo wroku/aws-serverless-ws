@@ -23,7 +23,7 @@ exports.handler = async event => {
                 domainName, 
                 stage, 
                 connectionIDs: gameRecord.players, 
-                message: `${connectionID}: ${body.message}`
+                message: JSON.stringify({"message": body.message})
             });
                
         } else {
@@ -35,7 +35,7 @@ exports.handler = async event => {
                 domainName, 
                 stage, 
                 connectionIDs: waitingUsersConnectionsIDs, 
-                message: `${connectionID}: ${body.message}`
+                message: JSON.stringify({"message": body.message})
             });
             
         }

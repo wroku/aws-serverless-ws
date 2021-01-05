@@ -56,5 +56,4 @@ exports.handler = async event => {
         return Responses._400({message: 'game could not be joined'});
     }   
 
-    return Responses._200({ message: 'joined game' });
 };
