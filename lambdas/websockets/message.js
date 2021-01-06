@@ -13,17 +13,21 @@ exports.handler = async event => {
 
     try {
         const record = await Dynamo.get(connectionID, tableName);
-        const {domainName, stage, game} = record;
+        const {domainName, stage, game, playerName} = record;
 
         if (game != 'waiting') {
             /*Send message only to current gameroom*/
             const gameRecord = await Dynamo.get(game, tableName);
 
+            const connectionIDs = [];
+            for(const player of gameRecord.players){
+                connectionIDs.push(player.ID)
+            }
             await WebSocket.broadcast({
                 domainName, 
                 stage, 
-                connectionIDs: gameRecord.players, 
-                message: JSON.stringify({"message": body.message})
+                connectionIDs, 
+                message: JSON.stringify({"message": {"author":playerName, "content":body.message}})
             });
                
         } else {
@@ -35,13 +39,16 @@ exports.handler = async event => {
                 domainName, 
                 stage, 
                 connectionIDs: waitingUsersConnectionsIDs, 
-                message: JSON.stringify({"message": body.message})
+                message: JSON.stringify({"message": {"author":playerName, "content":body.message}})
             });
             
         }
 
         return Responses._200({message: 'broadcasted a message'});
     } catch (error) {
+        if (error.statusCode === 410){
+            console.log("found stale connection")
+        }
         return Responses._400({message: 'message could not be received or propagated'});
     }   
 

@@ -15,8 +15,13 @@ exports.handler = async event => {
         const gameRecord = await Dynamo.get(body.gameId, tableName);
         const players = gameRecord.players;
         
+
         if (gameRecord.started === false) {
-            players.push(connectionID);
+
+            const record = await Dynamo.get(connectionID, tableName);
+            const {domainName, stage, playerName} = record;
+
+            players.push({"ID":connectionID, "name":playerName});
 
             const gameData = {
                 ...gameRecord,
@@ -25,8 +30,7 @@ exports.handler = async event => {
 
             await Dynamo.write(gameData, tableName);
 
-            const record = await Dynamo.get(connectionID, tableName);
-            const {domainName, stage} = record;
+            
 
             const data = {
                 ...record,
@@ -35,14 +39,29 @@ exports.handler = async event => {
 
             await Dynamo.write(data, tableName);
 
+            await WebSocket.send({
+                domainName, 
+                stage, 
+                connectionID, 
+                message: JSON.stringify({"joinedGame": {"gameId":body.gameId, "players":gameRecord.players}})
+            });
+
+            const connectionIDs = [];
+            for(const player of players){
+                connectionIDs.push(player.ID)
+            }
+
             await WebSocket.broadcast({
                 domainName, 
                 stage, 
-                connectionIDs: gameRecord.players, 
-                message: `Player ${connectionID} joined ${body.gameId} game!`
+                connectionIDs, 
+                message: JSON.stringify(
+                    {"message": {"author":"Gameroom","content":`Player ${playerName} joined ${body.gameId} game!`},
+                     "newPlayer": {"ID":connectionID, "name":playerName}
+                    })
             });
-        
-
+            
+            
             return Responses._200({message: 'joined game'});
 
         } else {

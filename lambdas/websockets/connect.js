@@ -8,9 +8,12 @@ exports.handler = async event => {
     console.log('event', event);
 
     const { connectionId: connectionID, domainName, stage } = event.requestContext;
+    const playerName = event.queryStringParameters.player;
 
+    
     const data = {
         ID: connectionID,
+        playerName,
         domainName,
         stage,
         game: 'waiting', 

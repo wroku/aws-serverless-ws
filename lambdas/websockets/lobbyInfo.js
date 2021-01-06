@@ -14,6 +14,7 @@ exports.handler = async event => {
     try {
         const games = await Dynamo.scan('begins_with(ID, :pref)',{':pref':'g'},'ID, started', tableName);
         console.log(games);
+        
         await WebSocket.send({
             domainName, 
             stage, 

@@ -12,14 +12,14 @@ exports.handler = async event => {
 
     try {
         const record = await Dynamo.get(connectionID, tableName);
-        const {domainName, stage} = record;
+        const {domainName, stage, playerName} = record;
         const gameId = `g${Date.now()}`;
 
         const gameData = {
             ID: gameId,
-            players: [connectionID],
-            messages:[],
+            players: [{"ID":connectionID, "name":playerName}],
             started: false,
+            deck: []
         };
 
         await Dynamo.write(gameData, tableName);
@@ -35,7 +35,7 @@ exports.handler = async event => {
             domainName, 
             stage, 
             connectionID, 
-            message: JSON.stringify({"message":`created game ${gameId}`})
+            message: JSON.stringify({"createdGame": {"gameID":gameId, "players":{"ID":connectionID, "name":playerName}}})
         });
 
         /* Update lobby state for all waiting users */
