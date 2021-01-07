@@ -19,11 +19,13 @@ exports.handler = async event => {
             domainName, 
             stage, 
             connectionID, 
-            message: JSON.stringify({"lobbyInfo": games.Items})
+            message: JSON.stringify({lobbyInfo: games.Items, ownID: connectionID})
         });
 
         return Responses._200({message: 'Send initial lobby info.'});
     } catch (error) {
+        console.log('Error');
+        console.log(error.stack);
         return Responses._400({message: 'problem - lobbyinfo'});
     }   
 };

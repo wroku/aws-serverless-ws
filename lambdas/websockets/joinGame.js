@@ -21,7 +21,7 @@ exports.handler = async event => {
             const record = await Dynamo.get(connectionID, tableName);
             const {domainName, stage, playerName} = record;
 
-            players.push({"ID":connectionID, "name":playerName});
+            players.push({ID:connectionID, name:playerName});
 
             const gameData = {
                 ...gameRecord,
@@ -38,12 +38,19 @@ exports.handler = async event => {
             };
 
             await Dynamo.write(data, tableName);
+            //Add score & avg time fields
+
+            for(const player of players){
+                player.score = 0;
+                player.avgTime = '-' ;
+            }
+
 
             await WebSocket.send({
                 domainName, 
                 stage, 
                 connectionID, 
-                message: JSON.stringify({"joinedGame": {"gameId":body.gameId, "players":gameRecord.players}})
+                message: JSON.stringify({joinedGame: {gameId: body.gameId, players: players}})
             });
 
             const connectionIDs = [];
@@ -56,8 +63,8 @@ exports.handler = async event => {
                 stage, 
                 connectionIDs, 
                 message: JSON.stringify(
-                    {"message": {"author":"Gameroom","content":`Player ${playerName} joined ${body.gameId} game!`},
-                     "newPlayer": {"ID":connectionID, "name":playerName}
+                    {message: {author: "Gameroom", content: `Player ${playerName} joined ${body.gameId} game!`},
+                     newPlayer: {ID:connectionID, name :playerName, score: 0, avgTime: '-'}
                     })
             });
             
@@ -72,6 +79,8 @@ exports.handler = async event => {
         
         
     } catch (error) {
+        console.log('Error');
+        console.log(error.stack);
         return Responses._400({message: 'game could not be joined'});
     }   
 

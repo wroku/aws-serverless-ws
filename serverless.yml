@@ -59,6 +59,11 @@ functions:
       events:
         - websocket:
             route: lobbyInfo
+  websocket-failedSelect:
+      handler: lambdas/websockets/failedSelect.handler
+      events:
+        - websocket:
+            route: failedSelect
   
 resources:
   Resources:
@@ -73,8 +78,8 @@ resources:
           - AttributeName: ID
             KeyType: HASH
         ProvisionedThroughput:
-              ReadCapacityUnits: 10
-              WriteCapacityUnits: 10   
+              ReadCapacityUnits: 15
+              WriteCapacityUnits: 15   
 #    wss://qhurwv53tk.execute-api.eu-central-1.amazonaws.com/dev
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

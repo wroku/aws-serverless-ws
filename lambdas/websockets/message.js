@@ -27,7 +27,7 @@ exports.handler = async event => {
                 domainName, 
                 stage, 
                 connectionIDs, 
-                message: JSON.stringify({"message": {"author":playerName, "content":body.message}})
+                message: JSON.stringify({message: {author: playerName, content: body.message}})
             });
                
         } else {
@@ -39,13 +39,15 @@ exports.handler = async event => {
                 domainName, 
                 stage, 
                 connectionIDs: waitingUsersConnectionsIDs, 
-                message: JSON.stringify({"message": {"author":playerName, "content":body.message}})
+                message: JSON.stringify({message: {author:playerName, content:body.message}})
             });
             
         }
 
         return Responses._200({message: 'broadcasted a message'});
     } catch (error) {
+        console.log('Error');
+        console.log(error.stack);
         if (error.statusCode === 410){
             console.log("found stale connection")
         }

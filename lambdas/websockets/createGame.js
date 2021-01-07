@@ -17,7 +17,7 @@ exports.handler = async event => {
 
         const gameData = {
             ID: gameId,
-            players: [{"ID":connectionID, "name":playerName}],
+            players: [{ID: connectionID, name: playerName}],
             started: false,
             deck: []
         };
@@ -35,7 +35,7 @@ exports.handler = async event => {
             domainName, 
             stage, 
             connectionID, 
-            message: JSON.stringify({"createdGame": {"gameID":gameId, "players":{"ID":connectionID, "name":playerName}}})
+            message: JSON.stringify({createdGame: {gameID: gameId, players: {ID :connectionID, name: playerName, score: 0, avgTime: '-'}}})
         });
 
         /* Update lobby state for all waiting users */
@@ -47,11 +47,13 @@ exports.handler = async event => {
             domainName, 
             stage, 
             connectionIDs: waitingUsersConnectionsIDs, 
-            message: JSON.stringify({"lobbyUpdate": {"ID":gameId, "started": false}})
+            message: JSON.stringify({lobbyUpdate: {ID: gameId, started: false}})
         });
 
         return Responses._200({message: 'created game'});
     } catch (error) {
+        console.log('Error');
+        console.log(error.stack);
         return Responses._400({message: 'game could not be created'});
     }   
 };
