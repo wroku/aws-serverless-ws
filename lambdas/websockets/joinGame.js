@@ -42,7 +42,7 @@ exports.handler = async event => {
 
             for(const player of players){
                 player.score = 0;
-                player.avgTime = '-' ;
+                player.times = '-' ;
             }
 
 
@@ -64,7 +64,7 @@ exports.handler = async event => {
                 connectionIDs, 
                 message: JSON.stringify(
                     {message: {author: "Gameroom", content: `Player ${playerName} joined ${body.gameId} game!`},
-                     newPlayer: {ID:connectionID, name :playerName, score: 0, avgTime: '-'}
+                     newPlayer: {ID:connectionID, name :playerName, score: 0, times: '-'}
                     })
             });
             

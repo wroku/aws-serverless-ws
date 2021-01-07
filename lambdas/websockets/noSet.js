@@ -8,7 +8,6 @@ exports.handler = async event => {
     console.log('event', event);
 
     const { connectionId: connectionID } = event.requestContext;
-    const body = JSON.parse(event.body);
 
     try {
         const record = await Dynamo.get(connectionID, tableName);
@@ -25,10 +24,10 @@ exports.handler = async event => {
             domainName, 
             stage, 
             connectionIDs, 
-            message: JSON.stringify({selectedSet: {author: connectionID, set: body.selected}})
+            message: JSON.stringify({noSet: connectionID})
         });
                
-        return Responses._200({message: 'broadcasted selected valid set'});
+        return Responses._200({message: 'broadcasted correct usage of noSet button'});
     
     } catch (error) {
         

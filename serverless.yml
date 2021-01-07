@@ -64,6 +64,16 @@ functions:
       events:
         - websocket:
             route: failedSelect
+  websocket-selectSet:
+      handler: lambdas/websockets/selectSet.handler
+      events:
+        - websocket:
+            route: selectSet
+  websocket-noSet:
+      handler: lambdas/websockets/noSet.handler
+      events:
+        - websocket:
+            route: noSet
   
 resources:
   Resources:
