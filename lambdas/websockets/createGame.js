@@ -35,7 +35,7 @@ exports.handler = async event => {
             domainName, 
             stage, 
             connectionID, 
-            message: JSON.stringify({createdGame: {gameID: gameId, players: {ID :connectionID, name: playerName, score: 0, times: '-'}}})
+            message: JSON.stringify({createdGame: {gameID: gameId, players: {ID :connectionID, name: playerName, score: 0, times: []}}})
         });
 
         /* Update lobby state for all waiting users */
