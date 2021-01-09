@@ -34,7 +34,15 @@ exports.handler = async event => {
             message: JSON.stringify({startedGame:{gameId: game, deck: body.deck}, message: {author: "Gameroom", content: "Game will start in 3, 2, 1..."}})
         });
           
-        
+        const waitingUsers = await Dynamo.scan('game = :id',{':id':'waiting'},'ID', tableName);
+        const games = await Dynamo.scan('begins_with(ID, :pref)',{':pref':'g'},'ID, started, players', tableName);
+        const waitingUsersConnectionsIDs = waitingUsers.Items.map(x => x.ID);
+        await WebSocket.broadcast({
+            domainName, 
+            stage, 
+            connectionIDs: waitingUsersConnectionsIDs, 
+            message: JSON.stringify({correctWaitingUsers: (-1) * connectionIDs.length, lobbyInfo: games.Items})
+        });
 
         return Responses._200({message: 'started game'});
     } catch (error) {

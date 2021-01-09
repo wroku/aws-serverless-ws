@@ -12,10 +12,31 @@ exports.handler = async event => {
     const {domainName, stage} = record;
     
     try {
-        const games = await Dynamo.scan('begins_with(ID, :pref)',{':pref':'g'},'ID, started, players', tableName);
-        console.log(games);
+        //Delete inactive waiting users from db
+        const waitingUsers = await Dynamo.scan('game = :id',{':id':'waiting'},'ID', tableName);
+        let waitingUsersCopy = waitingUsers.Items.slice();
+        for (const waitingUser of waitingUsers.Items) {
+            try {
+                await WebSocket.send({
+                    domainName, 
+                    stage, 
+                    connectionID:waitingUser.ID, 
+                    message: JSON.stringify({test: "Lobby lambda is testing this connection."})
+                    });
+                
+            } catch (error) {
+                if (error.statusCode === 410) {
+                    console.log(`Found stale connection, deleting ${waitingUser.ID}`);
+                    await Dynamo.delete(waitingUser.ID, tableName);
+                    waitingUsersCopy = waitingUsersCopy.filter(record => record.ID !== waitingUser.ID);
+                } else {
+                    throw error;
+                }; 
+            };
+        };
 
         //Find stale connections and delete, games and players
+        const games = await Dynamo.scan('begins_with(ID, :pref)',{':pref':'g'},'ID, started, players', tableName);
         let gamesCopy = games.Items.slice();
         for(const game of games.Items) {
             let playersCopy = game.players.slice();
@@ -65,15 +86,16 @@ exports.handler = async event => {
             domainName, 
             stage, 
             connectionID, 
-            message: JSON.stringify({lobbyInfo: gamesCopy, ownID: connectionID})
+            message: JSON.stringify({lobbyInfo: gamesCopy, ownID: connectionID, waitingUsers: waitingUsersCopy.length})
         });
+
 
         return Responses._200({message: 'Send initial lobby info.'});
     } catch (error) {
         console.log('Error');
         console.log(error.stack);
         return Responses._400({message: 'problem - lobbyinfo'});
-    }   
+    };
 };
 
 

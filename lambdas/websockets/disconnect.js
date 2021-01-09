@@ -13,7 +13,14 @@ exports.handler = async event => {
     const {domainName, stage} = record;
     const gameId = record.game;
 
-    if (gameId !== 'waiting'){
+    const waitingUsers = await Dynamo.scan('game = :id',{':id':'waiting'},'ID', tableName);
+    let waitingUsersConnectionsIDs = waitingUsers.Items.map(x => x.ID);
+    
+    //Exclude disconnected user from update
+    waitingUsersConnectionsIDs = waitingUsersConnectionsIDs.filter(record => record !== connectionID);
+    let correctWaitingUsers = 0;
+
+    if (gameId !== 'waiting') {
         const gameRecord = await Dynamo.get(gameId, tableName);
         const players = gameRecord.players.slice();
         
@@ -46,10 +53,22 @@ exports.handler = async event => {
             };
 
             await Dynamo.write(gameData, tableName); 
-
-        }
+        };
+        if (!gameRecord.started) {
+            correctWaitingUsers = -1;
+        };
     }
+    else {
+        correctWaitingUsers = -1;
+    };
     
+    const games = await Dynamo.scan('begins_with(ID, :pref)',{':pref':'g'},'ID, started, players', tableName);
+    await WebSocket.broadcast({
+        domainName, 
+        stage, 
+        connectionIDs: waitingUsersConnectionsIDs, 
+        message: JSON.stringify({correctWaitingUsers: correctWaitingUsers, lobbyInfo: games.Items})
+    });
 
     await Dynamo.delete(connectionID, tableName);
 
