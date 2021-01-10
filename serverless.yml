@@ -9,6 +9,7 @@ provider:
   region: eu-central-1
   environment:
     tableName: ${self:custom.tableName}
+    animationTime: ${self:custom.animationTime}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -17,6 +18,7 @@ provider:
       
 custom:
   tableName: WebSocketUsers
+  animationTime: 3000
 
 functions:
   websocket-connect:

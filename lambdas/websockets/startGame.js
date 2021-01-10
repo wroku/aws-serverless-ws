@@ -3,6 +3,7 @@ const Dynamo = require('../common/Dynamo');
 const WebSocket = require('../common/websocketMessage');
 
 const tableName = process.env.tableName;
+const animationTime = parseInt(process.env.animationTime);
 
 exports.handler = async event => {
     console.log('event', event);
@@ -14,10 +15,12 @@ exports.handler = async event => {
         const record = await Dynamo.get(connectionID, tableName);
         const {domainName, stage, game} = record;
         const gameRecord = await Dynamo.get(game, tableName);
+        const start = new Date();
 
         const gameData = {
             ...gameRecord,
             started: true,
+            timeLock: start.getTime() - animationTime,
         };
 
         await Dynamo.write(gameData, tableName);

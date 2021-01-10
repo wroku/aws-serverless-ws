@@ -27,7 +27,7 @@ exports.handler = async event => {
                 domainName, 
                 stage, 
                 connectionIDs, 
-                message: JSON.stringify({message: {author: playerName, content: body.message}})
+                message: JSON.stringify({message: {author: connectionID, content: body.message}})
             });
                
         } else {
@@ -39,7 +39,7 @@ exports.handler = async event => {
                 domainName, 
                 stage, 
                 connectionIDs: waitingUsersConnectionsIDs, 
-                message: JSON.stringify({message: {author:playerName, content:body.message}})
+                message: JSON.stringify({message: {author: connectionID, content:body.message}})
             });
             
         }
