@@ -20,7 +20,7 @@ exports.handler = async event => {
                 await WebSocket.send({
                     domainName, 
                     stage, 
-                    connectionID:waitingUser.ID, 
+                    connectionID: waitingUser.ID, 
                     message: JSON.stringify({test: "Lobby lambda is testing this connection."})
                     });
                 
@@ -36,7 +36,7 @@ exports.handler = async event => {
         };
 
         //Find stale connections and delete, games and players
-        const games = await Dynamo.scan('begins_with(ID, :pref)',{':pref':'g'},'ID, started, players', tableName);
+        const games = await Dynamo.scan('begins_with(ID, :pref)',{':pref':'g'},'ID, gameName, started, players', tableName);
         let gamesCopy = games.Items.slice();
         for(const game of games.Items) {
             let playersCopy = game.players.slice();
@@ -82,11 +82,20 @@ exports.handler = async event => {
             };
         };
 
+        // Count waiting users, including players who joined a game which haven't yet started
+        let awaitingUsers = 0;
+        for(game of gamesCopy){
+            if(!game.started) {
+                awaitingUsers = awaitingUsers + game.players.length;
+            };
+        };
+        awaitingUsers = awaitingUsers + waitingUsersCopy.length;
+
         await WebSocket.send({
             domainName, 
             stage, 
             connectionID, 
-            message: JSON.stringify({lobbyInfo: gamesCopy, ownID: connectionID, waitingUsers: waitingUsersCopy.length})
+            message: JSON.stringify({lobbyInfo: gamesCopy, ownID: connectionID, waitingUsers: awaitingUsers})
         });
 
 

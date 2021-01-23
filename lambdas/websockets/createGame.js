@@ -8,7 +8,7 @@ exports.handler = async event => {
     console.log('event', event);
 
     const { connectionId: connectionID } = event.requestContext;
-
+    const body = JSON.parse(event.body);
 
     try {
         const record = await Dynamo.get(connectionID, tableName);
@@ -19,6 +19,7 @@ exports.handler = async event => {
             ID: gameId,
             players: [{ID: connectionID, name: playerName}],
             started: false,
+            gameName: body.gameName,
             deck: []
         };
 
@@ -35,7 +36,7 @@ exports.handler = async event => {
             domainName, 
             stage, 
             connectionID, 
-            message: JSON.stringify({createdGame: {gameID: gameId, players: {ID :connectionID, name: playerName, score: 0, times: []}}})
+            message: JSON.stringify({createdGame: {gameID: gameId, gameName: body.gameName, players: {ID :connectionID, name: playerName, score: 0, times: []}}})
         });
 
         /* Update lobby state for all waiting users */
@@ -47,7 +48,7 @@ exports.handler = async event => {
             domainName, 
             stage, 
             connectionIDs: waitingUsersConnectionsIDs, 
-            message: JSON.stringify({lobbyUpdate: {ID: gameId, started: false}})
+            message: JSON.stringify({lobbyUpdate: {ID: gameId, gameName: body.gameName, started: false}})
         });
 
         return Responses._200({message: 'created game'});

@@ -25,12 +25,18 @@ exports.handler = async event => {
     let waitingUsersConnectionsIDs = waitingUsers.Items.map(x => x.ID);
     waitingUsersConnectionsIDs = waitingUsersConnectionsIDs.filter(record => record !== connectionID);
     console.log(waitingUsersConnectionsIDs);
-    await WebSocket.broadcast({
-        domainName, 
-        stage, 
-        connectionIDs: waitingUsersConnectionsIDs, 
-        message: JSON.stringify({correctWaitingUsers: 1})
-    });
+    try { 
+        await WebSocket.broadcast({
+            domainName, 
+            stage, 
+            connectionIDs: waitingUsersConnectionsIDs, 
+            message: JSON.stringify({correctWaitingUsers: 1})
+        }); 
+    } catch (error) {
+        console.log('Error');
+        console.log(error.stack);
+    }
+    
     
     
 

@@ -20,7 +20,7 @@ exports.handler = async event => {
         const gameData = {
             ...gameRecord,
             started: true,
-            timeLock: start.getTime() - animationTime,
+            timeLock: start.getTime() + 1000,
         };
 
         await Dynamo.write(gameData, tableName);
